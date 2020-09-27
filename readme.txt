@@ -4,7 +4,7 @@ Donate link: https://simple-membership-plugin.com/
 Tags: login, redirection, member, members, membership, login redirection, access, level
 Requires at least: 3.8
 Tested up to: 5.5
-Stable tag: 1.4
+Stable tag: 1.5
 License: GPLv2 or later
 
 An addon for the simple membership plugin to configure after login redirection to a specific page based on the member's level.
@@ -31,6 +31,9 @@ None
 None
 
 == Changelog ==
+
+= 1.5 =
+* Added a new feature to enable custom redirections (the custom redirection can be set by defining the parameter 'swpm_redirect_to' in the URL)
 
 = 1.4 =
 * Fixed an "Undefined index" PHP notice when the settings is saved and WP Debug is enabled on the site.

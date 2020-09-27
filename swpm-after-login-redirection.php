@@ -20,6 +20,14 @@ add_action('swpm_after_login', 'swpm_alr_do_after_login_redirection');
 add_filter('swpm_after_login_url', 'swpm_alr_after_login_url');
 add_filter('swpm_get_login_link_url', 'swpm_alr_append_query_arg_if_applicable');
 
+// The following 6 filters are used to allow the usage of the swpm_redirect_to parameter, if it is currently present in the page's URL
+add_filter('swpm_after_reg_callback_login_page_url', 'swpm_alr_append_custom_redirection_if_exists');
+add_filter('swpm_send_reg_email_activation_link', 'swpm_alr_append_custom_redirection_if_exists');
+add_filter('swpm_register_front_end_login_page_url', 'swpm_alr_append_custom_redirection_if_exists');
+add_filter('swpm_email_activation_login_page_url', 'swpm_alr_append_custom_redirection_if_exists');
+add_filter('swpm_resend_activation_email_login_page_url', 'swpm_alr_append_custom_redirection_if_exists');
+add_filter('swpm_after_registration_redirect_url', 'swpm_alr_override_registration_redirect_url');
+
 if (is_admin()) {//Do admin side stuff
     add_filter('swpm_admin_add_membership_level_ui', 'swpm_alr_admin_add_membership_level_ui');
     add_filter('swpm_admin_edit_membership_level_ui', 'swpm_alr_admin_edit_membership_level_ui', 10, 2);
@@ -148,4 +156,58 @@ function swpm_alr_append_query_arg_if_applicable($login_url){
     }
 
     return $login_url;
+}
+
+/*
+ * This function will append the value of $_GET['swpm_redirect_to'] to the url provided in parameter, if the user has enabled the feature.
+ * This can be used to redirect the user to a custom post/page (ignoring any other redirection)
+ */
+function swpm_alr_append_custom_redirection_if_exists($url){
+
+    //Check if the option 'allow_custom_redirections' is enabled or not.
+    $swpm_alr_settings = get_option('swpm_alr_settings');
+    if(empty($swpm_alr_settings['allow_custom_redirections'])){
+        $swpm_alr_settings['allow_custom_redirections'] = '';
+    }
+
+    if($swpm_alr_settings['allow_custom_redirections'] != '1'){
+        //The option 'allow_custom_redirections' is disabled. No need to edit the url.
+        return $url;
+    }
+
+    // Get the $_GET['swpm_redirect_to'] parameter. If does not exist, set to 'false'.
+    $swpm_redirect_to = !empty($_GET['swpm_redirect_to']) ? filter_input(INPUT_GET, 'swpm_redirect_to', FILTER_SANITIZE_ENCODED) : false;
+
+    // If swpm_redirect_to is defined, add it the swpm_redirect_to parameter to the url variable, to allow redirecting the user to a custom URL
+    if(!empty($swpm_redirect_to)){
+       $url = add_query_arg('swpm_redirect_to', $swpm_redirect_to, $url);
+    }
+
+    return $url;
+}
+
+/*
+ * This function will empty the redirection URL if the variable $_GET['swpm_redirect_to'] parameter is defined, and if the user has enabled the feature.
+ * This is needed to allow the swpm_redirect_to parameter to take priority over some of the redirection behavior of SWPM.
+ */
+function swpm_alr_override_registration_redirect_url($url){
+
+    //Check if the option 'allow_custom_redirections' is enabled or not.
+    $swpm_alr_settings = get_option('swpm_alr_settings');
+    if(empty($swpm_alr_settings['allow_custom_redirections'])){
+        $swpm_alr_settings['allow_custom_redirections'] = '';
+    }
+
+    if($swpm_alr_settings['allow_custom_redirections'] != '1'){
+        //The option 'allow_custom_redirections' is disabled. No need to edit the url.
+        return $url;
+    }
+
+    // Get the $_GET['swpm_redirect_to'] parameter. If does not exist, set to 'false'.
+    $swpm_redirect_to = !empty($_GET['swpm_redirect_to']) ? filter_input(INPUT_GET, 'swpm_redirect_to', FILTER_SANITIZE_ENCODED) : false;
+
+    // If $_GET['swpm_redirect_to'] is not defined, keep the existing URL
+    if(empty($swpm_redirect_to)) { return $url; }
+    // But if $_GET['swpm_redirect_to'] is defined, empty the existing redirect_to URL to allow redirection override.
+    else { return ''; }
 }

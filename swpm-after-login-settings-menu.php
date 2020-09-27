@@ -15,6 +15,7 @@ function swpm_alr_admin_interface() {
     if (isset($_POST['swpm_alr_save_settings'])) {
         $options = array(
             'redirect_to_last_page_enabled' => isset($_POST["redirect_to_last_page_enabled"]) ? '1' : '',
+            'allow_custom_redirections' => isset($_POST["allow_custom_redirections"]) ? '1' : '',
         );
         update_option('swpm_alr_settings', $options); //store the results in WP options table
         echo '<div id="message" class="updated fade">';
@@ -27,6 +28,12 @@ function swpm_alr_admin_interface() {
         $swpm_alr_settings['redirect_to_last_page_enabled'] = '';
     }
     $redirect_to_last_page_enabled = $swpm_alr_settings['redirect_to_last_page_enabled'];
+
+    if(empty($swpm_alr_settings['allow_custom_redirections'])){
+        $swpm_alr_settings['allow_custom_redirections'] = '';
+    }
+    $allow_custom_redirections = $swpm_alr_settings['allow_custom_redirections'];
+
     ?>
 
     <p style="background: #fff6d5; border: 1px solid #d1b655; color: #3f2502; margin: 10px 0;  padding: 5px 5px 5px 10px;">
@@ -46,7 +53,13 @@ function swpm_alr_admin_interface() {
                             <p class="description">If enabled, the plugin will redirect the members to the last page (where they clicked on the login link) after the login. This will override any other after login redirection configured in the membership level.</p>
                         </td>
                     </tr>
-
+                    <tr valign="top">
+                        <th scope="row">Allow Custom Redirections</th>
+                        <td>
+                            <input name="allow_custom_redirections" type="checkbox"<?php if ($allow_custom_redirections != '') echo ' checked="checked"'; ?> value="1"/>
+                            <p class="description">If enabled, the plugin will use the value of the parameter 'swpm_redirect_to' as redirection URL (if present). This will allow custom redirections, and this will override any other redirection configured in this plugin.</p>
+                        </td>
+                    </tr>
                 </table>
             </div></div>
         <input type="submit" name="swpm_alr_save_settings" value="Save" class="button-primary" />
